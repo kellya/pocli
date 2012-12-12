@@ -1,8 +1,10 @@
 #!/usr/bin/python
+"""General pushover.net api cli application"""
 import argparse
 import ConfigParser
 import httplib2
 import json
+import logging
 import sys
 import urllib
 import urllib2
@@ -13,6 +15,7 @@ import urllib2
 # devUrl = the URL for device validation to pushover API
 # sndUrl = the URL to get the list of sounds supportted by the pushover API
 # cfFile = the default location for the config file
+# lgFile = default location for the logger output.
 # FIXME: The cfFile could be a dictionary of various likely places instead of
 #        one, hard-coded value
 defaults = {
@@ -20,13 +23,38 @@ defaults = {
     ('devUrl'):'https://api.pushover.net/1/users/validate.json',
     ('sndUrl'):'https://api.pushover.net/1/sounds.json',
     ('cfFile'):'./pocli.cfg',
+    ('lgFile'):'./pocli.log',
 }
 
+
+def main():
+  http = httplib2.Http()
+  # This is where we actually make the call to send the message
+  response, content = http.request(defaults['msgUrl'], 'POST', 
+                                   urllib.urlencode(build_params()),
+                                   headers={'Content-Type': 
+                                            'application/x-www-form-urlencoded'}
+  )
+  if response.status == 200:
+    sys.exit(0)
+  else:
+    print 'There was an error sending the message.'
+    print 'Here is the response I got:'
+    for x in response.iteritems():
+      if x[0] != 'status':
+        print x[0] + " : " + x[1]
+      else:
+        # I want the HTTP status to be bolded
+        print '\033[1m' + x[0] + ' : ' + x[1] + '\033[0m'
+    sys.exit(3)
 
 def read_config(conf):
   """
   Reads in the values of a configfile ( from defaults['cfFile'], or by command
   line options) and returns them as a dictionary
+  
+  Arguments:
+  conf  --  This is the configuration file path
   """
   # Create an empty dictionary that will be appended w/ the values
   values={}
@@ -63,6 +91,11 @@ def dev_is_valid(checkdev, checkuser, checktoken):
   """
   Returns True or False for the device validation using pushover's validation
   API
+  
+  Arguments:
+  checkdev  --  Device string to validate
+  checkuser  --  API User string
+  checktoken  --  API application token string
   """
   # This is the URL defined in the API docs at 
   # https://pushover.net/api#identifiers
@@ -72,6 +105,7 @@ def dev_is_valid(checkdev, checkuser, checktoken):
     'device': checkdev
   })
 
+  http = httplib2.Http()
   response, content = http.request(defaults['devUrl'], 'POST', params, 
       headers={'Content-Type': 'application/x-www-form-urlencoded'}
   )
@@ -81,7 +115,7 @@ def dev_is_valid(checkdev, checkuser, checktoken):
     return True
   else:
     return False
-
+  
 def build_params ():
   """
   Parses the command line options and appends them to a dictionary which will
@@ -91,18 +125,21 @@ def build_params ():
   #FIXME returnval is a bad name since I use it in non-returny ways w/ device
   returnval={}
   parser = argparse.ArgumentParser(description='Process command line options')
+  parser.add_argument('-m', '--message', dest='message', required=True,
+                      help='''**REQUIRED** Specify the message contents.  Needs to be in
+                      quotes if you have spaces''')
   parser.add_argument('-f', '--config', dest='config',
                       help='Config file for persistent options (defaults to '
                       + defaults['cfFile'])
-  parser.add_argument('-m', '--message', dest='message', required=True,
-                      help='''Specify the message contents.  Needs to be in
-                      quotes if you have spaces''')
   parser.add_argument('-s', '--sound', dest='sound',
                       help='''Name of the sound, which can be any of the 
                       following: '''+ get_sounds())
+  parser.add_argument('-n', '--user', dest='user',
+                      help="**Required (but can be in config)** User information")
   parser.add_argument('-k', '--token', dest='token', 
-                      help='''Application API token (Required, but may be 
-                      specified in config)''')
+                      help='''**REQUIRED (but may be in config file)
+                      Application API token (Required, but may be specified in
+                      config)''')
   parser.add_argument('-t', '--title', dest='title',
                       help='The title of the message')
   parser.add_argument('-u', '--url', dest='url',
@@ -111,9 +148,8 @@ def build_params ():
                       help='''Priority of the message.  Can be 1 for high, or -1
                       for silent''')
   parser.add_argument('-d', '--device', dest='devid',
-                      help="The specific device to send the message")
-  parser.add_argument('-n', '--user', dest='user',
-                      help="User information")
+                      help='''The specific device to send the message, can be
+                      specified in the config file''')
   parser.add_argument('--timestamp', dest='epochval',
                       help="""Timestamp to set timestamp to a value other than
                       now.  This is passed in epoch format""")
@@ -172,10 +208,5 @@ def build_params ():
   
   return returnval
 
-http = httplib2.Http()
-# This is where we actually make the call to send the message
-response, content = http.request(defaults['msgUrl'], 'POST', 
-                                 urllib.urlencode(build_params()),
-                                 headers={'Content-Type': 
-                                          'application/x-www-form-urlencoded'}
-)
+if __name__=='__main__':
+  main()
