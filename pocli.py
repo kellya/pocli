@@ -25,9 +25,8 @@ defaults = {
 
 def read_config(conf):
   """
-  Reads in the contents of the file passed through 'conf' and sets
-  global variables for them.  This may be better to return a dict
-  I'll look into that later FIXME
+  Reads in the values of a configfile ( from defaults['cfFile'], or by command
+  line options) and returns them as a dictionary
   """
   # Create an empty dictionary that will be appended w/ the values
   values={}
@@ -62,10 +61,8 @@ def get_sounds():
 
 def dev_is_valid(checkdev, checkuser, checktoken):
   """
-  FIXME!!!
-  This section isn't currently called, and is broken
-  Return True or False based on validation of the device passed
-  through checkdev.
+  Returns True or False for the device validation using pushover's validation
+  API
   """
   # This is the URL defined in the API docs at 
   # https://pushover.net/api#identifiers
@@ -86,8 +83,9 @@ def dev_is_valid(checkdev, checkuser, checktoken):
     return False
 
 def build_params ():
-  """Builds parameters and returns a dictionary
-  well ok, fine.  It only throws them in a dictionary w/o logic at the moment
+  """
+  Parses the command line options and appends them to a dictionary which will
+  get passed to the URL for actually posting the message
   """
   #start with an empty dictionary, and build what we will eventually return
   #FIXME returnval is a bad name since I use it in non-returny ways w/ device
