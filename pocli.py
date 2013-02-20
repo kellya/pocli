@@ -64,6 +64,8 @@ def read_config(conf):
     values['token'] = config.get('Main', 'token')
     user = config.get('Main', 'user')
     values['user'] = config.get('Main', 'user')
+    values['retry'] = config.get('Main', 'retry')
+    values['expire'] = config.get('Main', 'expire')
     if config.has_option('Main', 'device'):
       values['device'] = config.get('Main', 'device')
   except ConfigParser.NoSectionError, err:
@@ -128,6 +130,9 @@ def build_params ():
   parser.add_argument('-m', '--message', dest='message', required=True,
                       help='''**REQUIRED** Specify the message contents.  Needs to be in
                       quotes if you have spaces''')
+  parser.add_argument('-e', '--expire', dest='expire',
+                      help="""Number of seconds afer which priority 2 messages will stop
+                      sending every RETRY (see below) seconds""")
   parser.add_argument('-f', '--config', dest='config',
                       help='Config file for persistent options (defaults to '
                       + defaults['cfFile'])
@@ -146,7 +151,10 @@ def build_params ():
                       help="Additional URL to append to the message")
   parser.add_argument('-p', '--priority', dest='priority',
                       help='''Priority of the message.  Can be 1 for high, or -1
-                      for silent''')
+                      for silent.  With Pushover client version 1.6, you may specify 2 for repeating''')
+  parser.add_argument('-r','--retry', dest='retry',
+                      help="""The number of seconds to wait before resending an alert when priority is 
+                      set to 2.  Minimum of 30 seconds""")
   parser.add_argument('-d', '--device', dest='devid',
                       help='''The specific device to send the message, can be
                       specified in the config file''')
@@ -205,7 +213,13 @@ def build_params ():
   
   if args.epochval is not None:
     returnval['timestamp'] = args.epochval
-  
+
+  if args.retry is not None:
+    returnval['retry'] = args.retry
+
+  if args.expire is not None:
+    returnval['expire'] = args.expire
+
   return returnval
 
 if __name__=='__main__':
