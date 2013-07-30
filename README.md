@@ -17,7 +17,7 @@ Running
 =======
 
 After you have met the requirements, edit the config file and add your specific
-data, then you just need to run *pocli.py -f config --message*.  Additinally, 
+data, then you just need to run *pocli.py -f config --message*.  Additionally, 
 you may run *pocli.py --help* to see the list of options available.
 
 Warnings

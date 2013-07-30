@@ -51,74 +51,78 @@ def main():
 
 
 def read_config(conf):
-  """
-  Reads in the values of a configfile ( from defaults['cfFile'], or by command
-  line options) and returns them as a dictionary
+    """
+    Reads in the values of a configfile ( from defaults['cfFile'], or by command
+    line options) and returns them as a dictionary
 
-  Arguments:
-  conf  --  This is the configuration file path
-  """
-  # Create an empty dictionary that will be appended w/ the values
-  values={}
-  try:
-    config = ConfigParser.RawConfigParser()
-    config.read(conf)
-    values['token'] = config.get('Main', 'token')
-    user = config.get('Main', 'user')
-    values['user'] = config.get('Main', 'user')
-    values['retry'] = config.get('Main', 'retry')
-    values['expire'] = config.get('Main', 'expire')
-    if config.has_option('Main', 'device'):
-      values['device'] = config.get('Main', 'device')
-  except ConfigParser.NoSectionError, err:
-    print 'Error:  Couldn\'t read config'
-    sys.exit(2)
-  except ConfigParser.ParsingError, err:
-    print 'Couldn\'t parse config file: ', err
-    sys.exit(99)
-  return values
+    Arguments:
+    conf  --  This is the configuration file path
+    """
+    # Create an empty dictionary that will be appended w/ the values
+    values = {}
+    try:
+        config = ConfigParser.RawConfigParser()
+        config.read(conf)
+        values['token'] = config.get('Main', 'token')
+        user = config.get('Main', 'user')
+        values['user'] = config.get('Main', 'user')
+        values['retry'] = config.get('Main', 'retry')
+        values['expire'] = config.get('Main', 'expire')
+        if config.has_option('Main', 'device'):
+            values['device'] = config.get('Main', 'device')
+    except ConfigParser.NoSectionError, err:
+        print 'Error:  Couldn\'t read config'
+        sys.exit(2)
+    except ConfigParser.ParsingError, err:
+        print 'Couldn\'t parse config file: ', err
+        sys.exit(99)
+    return values
+
 
 def get_sounds():
-  "This gets a list of sounds from a JSON call, and outputs it as a string"
-  sounds_url = urllib2.urlopen(defaults['sndUrl'])
-  sound_list = json.load(sounds_url)
-  sounds_url.close()
-  all_sounds =""
-  if sound_list['status'] != 1:
-    all_sounds = "Error: Could not retrieve list of sounds"
-  else:
-    for sounds, value in sound_list['sounds'].iteritems():
-      all_sounds=all_sounds + ' ' + sounds
-  return all_sounds
+    "This gets a list of sounds from a JSON call, and outputs it as a string"
+    sounds_url = urllib2.urlopen(defaults['sndUrl'])
+    sound_list = json.load(sounds_url)
+    sounds_url.close()
+    all_sounds = ""
+    if sound_list['status'] != 1:
+        all_sounds = "Error: Could not retrieve list of sounds"
+    else:
+        for sounds, value in sound_list['sounds'].iteritems():
+            all_sounds = all_sounds + ' ' + sounds
+    return all_sounds
+
 
 def dev_is_valid(checkdev, checkuser, checktoken):
-  """
-  Returns True or False for the device validation using pushover's validation
-  API
+    """
+    Returns True or False for the device validation using pushover's validation
+    API
 
-  Arguments:
-  checkdev  --  Device string to validate
-  checkuser  --  API User string
-  checktoken  --  API application token string
-  """
-  # This is the URL defined in the API docs at
-  # https://pushover.net/api#identifiers
-  params = urllib.urlencode({
-    'user': checkuser,
-    'token': checktoken,
-    'device': checkdev
-  })
+    Arguments:
+    checkdev  --  Device string to validate
+    checkuser  --  API User string
+    checktoken  --  API application token string
+    """
+    # This is the URL defined in the API docs at
+    # https://pushover.net/api#identifiers
+    params = urllib.urlencode(
+        {'user': checkuser, 'token': checktoken, 'device': checkdev}
+    )
 
-  http = httplib2.Http()
-  response, content = http.request(defaults['devUrl'], 'POST', params,
-      headers={'Content-Type': 'application/x-www-form-urlencoded'}
-  )
-  # The URL will return a 200 if it is good, 400 if bad.  This just
-  # generically validates 200 and everything else is bad.
-  if response.status == 200:
-    return True
-  else:
-    return False
+    http = httplib2.Http()
+    response, content = http.request(
+        defaults['devUrl'],
+        'POST',
+        params,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'}
+    )
+    # The URL will return a 200 if it is good, 400 if bad.  This just
+    # generically validates 200 and everything else is bad.
+    if response.status == 200:
+        return True
+    else:
+        return False
+
 
 def build_params ():
   """
@@ -224,5 +228,5 @@ def build_params ():
 
   return returnval
 
-if __name__=='__main__':
-  main()
+if __name__ == '__main__':
+    main()
