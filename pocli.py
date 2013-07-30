@@ -19,40 +19,42 @@ import urllib2
 # FIXME: The cfFile could be a dictionary of various likely places instead of
 #        one, hard-coded value
 defaults = {
-    ('msgUrl'):'https://api.pushover.net/1/messages.json',
-    ('devUrl'):'https://api.pushover.net/1/users/validate.json',
-    ('sndUrl'):'https://api.pushover.net/1/sounds.json',
-    ('cfFile'):'./pocli.cfg',
-    ('lgFile'):'./pocli.log',
+    ('msgUrl'): 'https://api.pushover.net/1/messages.json',
+    ('devUrl'): 'https://api.pushover.net/1/users/validate.json',
+    ('sndUrl'): 'https://api.pushover.net/1/sounds.json',
+    ('cfFile'): './pocli.cfg',
+    ('lgFile'): './pocli.log',
 }
 
 
 def main():
-  http = httplib2.Http()
-  # This is where we actually make the call to send the message
-  response, content = http.request(defaults['msgUrl'], 'POST', 
-                                   urllib.urlencode(build_params()),
-                                   headers={'Content-Type': 
-                                            'application/x-www-form-urlencoded'}
-  )
-  if response.status == 200:
-    sys.exit(0)
-  else:
-    print 'There was an error sending the message.'
-    print 'Here is the response I got:'
-    for x in response.iteritems():
-      if x[0] != 'status':
-        print x[0] + " : " + x[1]
-      else:
-        # I want the HTTP status to be bolded
-        print '\033[1m' + x[0] + ' : ' + x[1] + '\033[0m'
-    sys.exit(3)
+    http = httplib2.Http()
+    # This is where we actually make the call to send the message
+    response, content = http.request(
+        defaults['msgUrl'],
+        'POST',
+        urllib.urlencode(build_params()),
+        headers={'Content-Type': 'application/x-www-form-urlencoded'}
+    )
+    if response.status == 200:
+        sys.exit(0)
+    else:
+        print 'There was an error sending the message.'
+        print 'Here is the response I got:'
+        for x in response.iteritems():
+            if x[0] != 'status':
+                print x[0] + " : " + x[1]
+            else:
+                # I want the HTTP status to be bolded
+                print '\033[1m' + x[0] + ' : ' + x[1] + '\033[0m'
+        sys.exit(3)
+
 
 def read_config(conf):
   """
   Reads in the values of a configfile ( from defaults['cfFile'], or by command
   line options) and returns them as a dictionary
-  
+
   Arguments:
   conf  --  This is the configuration file path
   """
@@ -93,13 +95,13 @@ def dev_is_valid(checkdev, checkuser, checktoken):
   """
   Returns True or False for the device validation using pushover's validation
   API
-  
+
   Arguments:
   checkdev  --  Device string to validate
   checkuser  --  API User string
   checktoken  --  API application token string
   """
-  # This is the URL defined in the API docs at 
+  # This is the URL defined in the API docs at
   # https://pushover.net/api#identifiers
   params = urllib.urlencode({
     'user': checkuser,
@@ -108,7 +110,7 @@ def dev_is_valid(checkdev, checkuser, checktoken):
   })
 
   http = httplib2.Http()
-  response, content = http.request(defaults['devUrl'], 'POST', params, 
+  response, content = http.request(defaults['devUrl'], 'POST', params,
       headers={'Content-Type': 'application/x-www-form-urlencoded'}
   )
   # The URL will return a 200 if it is good, 400 if bad.  This just
@@ -117,7 +119,7 @@ def dev_is_valid(checkdev, checkuser, checktoken):
     return True
   else:
     return False
-  
+
 def build_params ():
   """
   Parses the command line options and appends them to a dictionary which will
@@ -137,11 +139,11 @@ def build_params ():
                       help='Config file for persistent options (defaults to '
                       + defaults['cfFile'])
   parser.add_argument('-s', '--sound', dest='sound',
-                      help='''Name of the sound, which can be any of the 
-                      following: '''+ get_sounds())
+                      help='''Name of the sound, which can be any of the
+                      following: ''')
   parser.add_argument('-n', '--user', dest='user',
                       help="**Required (but can be in config)** User information")
-  parser.add_argument('-k', '--token', dest='token', 
+  parser.add_argument('-k', '--token', dest='token',
                       help='''**REQUIRED (but may be in config file)
                       Application API token (Required, but may be specified in
                       config)''')
@@ -153,7 +155,7 @@ def build_params ():
                       help='''Priority of the message.  Can be 1 for high, or -1
                       for silent.  With Pushover client version 1.6, you may specify 2 for repeating''')
   parser.add_argument('-r','--retry', dest='retry',
-                      help="""The number of seconds to wait before resending an alert when priority is 
+                      help="""The number of seconds to wait before resending an alert when priority is
                       set to 2.  Minimum of 30 seconds""")
   parser.add_argument('-d', '--device', dest='devid',
                       help='''The specific device to send the message, can be
@@ -162,8 +164,8 @@ def build_params ():
                       help="""Timestamp to set timestamp to a value other than
                       now.  This is passed in epoch format""")
   args = parser.parse_args()
-  
-  
+
+
   if args.token is not None and args.user is not None:
     #if we were given a token and a user information on the commandline, lets
     #use those
@@ -181,10 +183,10 @@ def build_params ():
     """
     print sys.argv[0] + " --help\n"
     sys.exit(1)
-    
+
   # Message is required, so argparse is already going to validate it exists
   returnval['message'] = args.message
-  
+
   #I am doing essentially the same thing twice.  This needs cleaned up FIXME
   if args.devid is not None:
     if dev_is_valid(args.devid,returnval['user'],returnval['token']):
@@ -197,20 +199,20 @@ def build_params ():
     if not dev_is_valid(returnval['device'],returnval['user'],returnval['token']):
       print "Error: Device " + str(returnval['device']) + " is invalid"
       sys.exit(1)
-      
+
   # It feels like there may be a better way to loop through this next stuff
   if args.sound is not None:
     returnval['sound'] = args.sound
-    
+
   if args.priority is not None:
     returnval['priority'] = args.priority
-    
+
   if args.title is not None:
     returnval['title'] = args.title
-  
+
   if args.url is not None:
     returnval['url'] = args.url
-  
+
   if args.epochval is not None:
     returnval['timestamp'] = args.epochval
 

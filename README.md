@@ -11,14 +11,14 @@ Requirements
 You need to have
   * An existing account w/ pushover.net
   * An Application on pushover.net created
-  * Python (2.7 or better.  2.6 might work, don't really know)
+  * Python (Tested with v2.7 as packaged with Fedora)
 
 Running
 =======
 
-After you have the requirements, and have added your specific data to the conf
-file, you just need to run *pocli.py --message*.  Additinally, you may run
-*pocli.py --help* to see the list of options available.
+After you have met the requirements, edit the config file and add your specific
+data, then you just need to run *pocli.py -f config --message*.  Additinally, 
+you may run *pocli.py --help* to see the list of options available.
 
 Warnings
 ========

@@ -1,0 +1,13 @@
+[Main]
+#Put your user key here.  This can be found by logging into
+# https://pushover.net and copying the key from the upper-right hand section
+user: replace_with_your_key
+#The token is an app-specific token.  You must create an application by going
+#to https://pushover.net/apps/build.  Once you fill out the form you will be
+#taken to a page that shows the app token.  Put that in the token field
+token: replace_with_app_token
+#
+# The following settings change the behaviour of priority 2 messages
+#
+retry: 60       #How often (seconds) the message will repeat
+expire: 3600    #Stop sending after this long (in seconds)
