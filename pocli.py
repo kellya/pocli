@@ -4,7 +4,7 @@ import argparse
 import ConfigParser
 import httplib2
 import json
-import logging
+#import logging
 import sys
 import urllib
 import urllib2
@@ -52,8 +52,8 @@ def main():
 
 def read_config(conf):
     """
-    Reads in the values of a configfile ( from defaults['cfFile'], or by command
-    line options) and returns them as a dictionary
+    Reads in the values of a configfile ( from defaults['cfFile'],
+    or by command line options) and returns them as a dictionary
 
     Arguments:
     conf  --  This is the configuration file path
@@ -64,7 +64,6 @@ def read_config(conf):
         config = ConfigParser.RawConfigParser()
         config.read(conf)
         values['token'] = config.get('Main', 'token')
-        user = config.get('Main', 'user')
         values['user'] = config.get('Main', 'user')
         values['retry'] = config.get('Main', 'retry')
         values['expire'] = config.get('Main', 'expire')
@@ -124,109 +123,158 @@ def dev_is_valid(checkdev, checkuser, checktoken):
         return False
 
 
-def build_params ():
-  """
-  Parses the command line options and appends them to a dictionary which will
-  get passed to the URL for actually posting the message
-  """
-  #start with an empty dictionary, and build what we will eventually return
-  #FIXME returnval is a bad name since I use it in non-returny ways w/ device
-  returnval={}
-  parser = argparse.ArgumentParser(description='Process command line options')
-  parser.add_argument('-m', '--message', dest='message', required=True,
-                      help='''**REQUIRED** Specify the message contents.  Needs to be in
-                      quotes if you have spaces''')
-  parser.add_argument('-e', '--expire', dest='expire',
-                      help="""Number of seconds afer which priority 2 messages will stop
-                      sending every RETRY (see below) seconds""")
-  parser.add_argument('-f', '--config', dest='config',
-                      help='Config file for persistent options (defaults to '
-                      + defaults['cfFile'])
-  parser.add_argument('-s', '--sound', dest='sound',
-                      help='''Name of the sound, which can be any of the
-                      following: ''')
-  parser.add_argument('-n', '--user', dest='user',
-                      help="**Required (but can be in config)** User information")
-  parser.add_argument('-k', '--token', dest='token',
-                      help='''**REQUIRED (but may be in config file)
-                      Application API token (Required, but may be specified in
-                      config)''')
-  parser.add_argument('-t', '--title', dest='title',
-                      help='The title of the message')
-  parser.add_argument('-u', '--url', dest='url',
-                      help="Additional URL to append to the message")
-  parser.add_argument('-p', '--priority', dest='priority',
-                      help='''Priority of the message.  Can be 1 for high, or -1
-                      for silent.  With Pushover client version 1.6, you may specify 2 for repeating''')
-  parser.add_argument('-r','--retry', dest='retry',
-                      help="""The number of seconds to wait before resending an alert when priority is
-                      set to 2.  Minimum of 30 seconds""")
-  parser.add_argument('-d', '--device', dest='devid',
-                      help='''The specific device to send the message, can be
-                      specified in the config file''')
-  parser.add_argument('--timestamp', dest='epochval',
-                      help="""Timestamp to set timestamp to a value other than
-                      now.  This is passed in epoch format""")
-  args = parser.parse_args()
-
-
-  if args.token is not None and args.user is not None:
-    #if we were given a token and a user information on the commandline, lets
-    #use those
-    returnval['token']=args.token
-    returnval['user']=args.user
-  elif args.config is not None:
-    #otherwise, we'll try to get them from the config
-    returnval=read_config(args.config)
-  else:
-    #Well they've got to specified somewhere, so die if we get here
-    print """
-    Error:
-    user and token are required.  They either BOTH need to be specified on the
-    command line, or BOTH in the config file.  For more information run:
+def build_params():
     """
-    print sys.argv[0] + " --help\n"
-    sys.exit(1)
+    Parses the command line options and appends them to a dictionary which will
+    get passed to the URL for actually posting the message
+    """
+    #start with an empty dictionary, and build what we will eventually return
+    #FIXME returnval is a bad name since I use it in non-returny ways w/ device
+    returnval = {}
+    parser = argparse.ArgumentParser(
+        description='Process command line options'
+    )
+    parser.add_argument(
+        '-m',
+        '--message',
+        dest='message',
+        required=True,
+        help='''**REQUIRED** Specify the message contents.  Needs to be in
+                        quotes if you have spaces'''
+    )
+    parser.add_argument(
+        '-e',
+        '--expire',
+        dest='expire',
+        help="""Number of seconds afer which priority 2 messages will stop
+                        sending every RETRY (see below) seconds"""
+    )
+    parser.add_argument(
+        '-f',
+        '--config',
+        dest='config',
+        help='Config file for persistent options (defaults to ' +
+        defaults['cfFile'] + ')'
+    )
+    parser.add_argument(
+        '-s',
+        '--sound',
+        dest='sound',
+        help='''Name of the sound, which can be any of the following: '''
+    )
+    parser.add_argument(
+        '-n',
+        '--user',
+        dest='user',
+        help="**Required (but can be in config)** User information"
+    )
+    parser.add_argument(
+        '-k',
+        '--token',
+        dest='token',
+        help='''**REQUIRED (but may be in config file) Application API token
+        (Required, but may be specified in config)'''
+    )
+    parser.add_argument(
+        '-t',
+        '--title',
+        dest='title',
+        help='The title of the message'
+    )
+    parser.add_argument(
+        '-u',
+        '--url',
+        dest='url',
+        help="Additional URL to append to the message"
+    )
+    parser.add_argument(
+        '-p',
+        '--priority',
+        dest='priority',
+        help='''Priority of the message.  Can be 1 for high, or -1 for silent.
+        With Pushover client version 1.6, you may specify 2 for repeating'''
+    )
+    parser.add_argument(
+        '-r',
+        '--retry',
+        dest='retry',
+        help="""The number of seconds to wait before resending an alert when
+        priority is set to 2.  Minimum of 30 seconds"""
+    )
+    parser.add_argument(
+        '-d',
+        '--device',
+        dest='devid',
+        help='''The specific device to send the message, can be specified in
+        the config file'''
+    )
+    parser.add_argument(
+        '--timestamp',
+        dest='epochval',
+        help="""Timestamp to set timestamp to a value other than now.  This is
+        passed in epoch format"""
+    )
+    args = parser.parse_args()
 
-  # Message is required, so argparse is already going to validate it exists
-  returnval['message'] = args.message
-
-  #I am doing essentially the same thing twice.  This needs cleaned up FIXME
-  if args.devid is not None:
-    if dev_is_valid(args.devid,returnval['user'],returnval['token']):
-      returnval['device'] = args.devid
+    if args.token is not None and args.user is not None:
+        #if we were given a token and a user information on the commandline,
+        #lets use those
+        returnval['token'] = args.token
+        returnval['user'] = args.user
+    elif args.config is not None:
+        #otherwise, we'll try to get them from the config
+        returnval = read_config(args.config)
     else:
-      print "Error: Device " + str(args.devid) + " is invalid"
-      sys.exit(1)
-  if 'device' in returnval:
-    #We got a device from config, let's validate it
-    if not dev_is_valid(returnval['device'],returnval['user'],returnval['token']):
-      print "Error: Device " + str(returnval['device']) + " is invalid"
-      sys.exit(1)
+        #Well they've got to specified somewhere, so die if we get here
+        print """
+        Error:
+        user and token are required.  They either BOTH need to be specified
+        on the command line, or BOTH in the config file.
+        """
+        print sys.argv[0] + " --help\n"
+        sys.exit(1)
 
-  # It feels like there may be a better way to loop through this next stuff
-  if args.sound is not None:
-    returnval['sound'] = args.sound
+    # Message is required, so argparse is already going to validate it exists
+    returnval['message'] = args.message
 
-  if args.priority is not None:
-    returnval['priority'] = args.priority
+    #I am doing essentially the same thing twice.  This needs cleaned up FIXME
+    if args.devid is not None:
+        if dev_is_valid(args.devid, returnval['user'], returnval['token']):
+            returnval['device'] = args.devid
+        else:
+            print "Error: Device " + str(args.devid) + " is invalid"
+        sys.exit(1)
+    if 'device' in returnval:
+        #We got a device from config, let's validate it
+        if not dev_is_valid(returnval['device'], returnval['user'],
+                            returnval['token']
+                            ):
+            print "Error: Device " + str(returnval['device']) + " is invalid"
+        sys.exit(1)
 
-  if args.title is not None:
-    returnval['title'] = args.title
+    # It feels like there may be a better way to loop through this next stuff
+    if args.sound is not None:
+        returnval['sound'] = args.sound
 
-  if args.url is not None:
-    returnval['url'] = args.url
+    if args.priority is not None:
+        returnval['priority'] = args.priority
 
-  if args.epochval is not None:
-    returnval['timestamp'] = args.epochval
+    if args.title is not None:
+        returnval['title'] = args.title
 
-  if args.retry is not None:
-    returnval['retry'] = args.retry
+    if args.url is not None:
+        returnval['url'] = args.url
 
-  if args.expire is not None:
-    returnval['expire'] = args.expire
+    if args.epochval is not None:
+        returnval['timestamp'] = args.epochval
 
-  return returnval
+    if args.retry is not None:
+        returnval['retry'] = args.retry
+
+    if args.expire is not None:
+        returnval['expire'] = args.expire
+
+    return returnval
 
 if __name__ == '__main__':
     main()
