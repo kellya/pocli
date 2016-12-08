@@ -1,3 +1,8 @@
+I'm done
+========
+
+I found ntfy: https://github.com/dschep/ntfy and since it does more than my script does as far as notification endpoints, I think it is better than mine, so I'm not messing with it anymore :)
+
 pocli
 =====
 
